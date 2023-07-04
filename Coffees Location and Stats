@@ -1,0 +1,20 @@
+CREATE TABLE coffees (id INTEGER PRIMARY KEY, name TEXT, Quantity INTEGER, location TEXT, store TEXT, price INTEGER); 
+
+
+INSERT INTO coffees VALUES (1, "latte", 3, "Salmiya", "mug", 4.50);
+
+INSERT INTO coffees VALUES (2, "americano", 2, "hawally", "Costa Coffee", 3.99);
+INSERT INTO coffees VALUES (3, "cereal latte", 4, "Kuwait City", "Caribou", 4.85);
+INSERT INTO coffees VALUES (4, "Oelato latte", 3, "Avenues Mall", "Starbucks", 3.75);
+INSERT INTO coffees VALUES (5, "espresso", 4, "Sabah Salem", "Cuppa", 2.99);
+INSERT INTO coffees VALUES (6, "white coffee", 2, "Murouj", "Menus", 4.45);
+
+--display the database order by price
+SELECT * FROM coffees
+ORDER BY price desc;
+
+--what is the avg price of items in the price section? 
+SELECT AVG(price) "avg bulk item price"
+FROM coffees
+where section= 'price'; 
+
