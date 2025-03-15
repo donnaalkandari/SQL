@@ -1,0 +1,26 @@
+-- Create the database (if not exists)
+CREATE DATABASE IF NOT EXISTS NYC_Telephone_Usage;
+USE NYC_Telephone_Usage;
+
+-- Create a table to store telephone usage data
+CREATE TABLE IF NOT EXISTS Call_Records (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    call_date DATE NOT NULL,
+    call_duration INT NOT NULL, -- Duration in seconds
+    call_type ENUM('Local', 'International', 'Mobile', 'Landline') NOT NULL,
+    borough ENUM('Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island') NOT NULL
+);
+
+-- Insert sample data
+INSERT INTO Call_Records (call_date, call_duration, call_type, borough) VALUES
+('2020-01-15', 180, 'Mobile', 'Manhattan'),
+('2021-02-20', 240, 'Local', 'Brooklyn'),
+('2022-05-10', 300, 'International', 'Queens'),
+('2023-06-22', 360, 'Mobile', 'Bronx'),
+('2024-07-05', 420, 'Landline', 'Staten Island');
+
+-- Query to analyze the rise in telephone usage over the years
+SELECT YEAR(call_date) AS year, COUNT(*) AS total_calls, SUM(call_duration) AS total_duration_seconds
+FROM Call_Records
+GROUP BY YEAR(call_date)
+ORDER BY YEAR(call_date) ASC;
