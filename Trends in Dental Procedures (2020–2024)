@@ -1,0 +1,73 @@
+-- Create a new database for dental research (optional)
+CREATE DATABASE IF NOT EXISTS dental_trends;
+USE dental_trends;
+
+-- Create a table to store dental procedure records
+CREATE TABLE IF NOT EXISTS dental_procedures (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    procedure_type ENUM('Crown', 'Root Canal', 'Surgery') NOT NULL,
+    procedure_date DATE NOT NULL,
+    clinic_location VARCHAR(100),
+    provider_id INT
+);
+
+-- Example: Insert sample data (extend or replace with real data)
+INSERT INTO dental_procedures (patient_id, procedure_type, procedure_date, clinic_location, provider_id) VALUES
+(101, 'Crown', '2020-04-15', 'NYC Downtown', 201),
+(102, 'Root Canal', '2021-02-22', 'NYC Uptown', 202),
+(103, 'Surgery', '2022-07-11', 'Brooklyn', 203),
+(104, 'Crown', '2023-03-18', 'Queens', 204),
+(105, 'Root Canal', '2024-01-25', 'NYC Downtown', 201),
+(106, 'Surgery', '2020-08-30', 'Brooklyn', 203),
+(107, 'Crown', '2021-12-05', 'NYC Uptown', 202);
+
+-- Query: Annual trends for each dental procedure type from 2020 to 2024
+SELECT
+    YEAR(procedure_date) AS year,
+    procedure_type,
+    COUNT(*) AS total_procedures
+FROM
+    dental_procedures
+WHERE
+    procedure_date BETWEEN '2020-01-01' AND '2024-12-31'
+GROUP BY
+    YEAR(procedure_date), procedure_type
+ORDER BY
+    year ASC, procedure_type ASC;
+
+-- Optional: Monthly breakdown to spot spikes or drops
+SELECT
+    DATE_FORMAT(procedure_date, '%Y-%m') AS month,
+    procedure_type,
+    COUNT(*) AS procedures
+FROM
+    dental_procedures
+WHERE
+    procedure_date BETWEEN '2020-01-01' AND '2024-12-31'
+GROUP BY
+    month, procedure_type
+ORDER BY
+    month ASC, procedure_type;
+
+-- Optional: Visual preparation data — percentages of each type per year
+SELECT
+    year,
+    procedure_type,
+    total_procedures,
+    ROUND((total_procedures * 100.0 / year_total), 2) AS percent_of_year
+FROM (
+    SELECT
+        YEAR(procedure_date) AS year,
+        procedure_type,
+        COUNT(*) AS total_procedures,
+        SUM(COUNT(*)) OVER (PARTITION BY YEAR(procedure_date)) AS year_total
+    FROM
+        dental_procedures
+    WHERE
+        procedure_date BETWEEN '2020-01-01' AND '2024-12-31'
+    GROUP BY
+        YEAR(procedure_date), procedure_type
+) AS summary
+ORDER BY
+    year ASC, procedure_type ASC;
