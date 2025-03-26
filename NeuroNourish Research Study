@@ -1,0 +1,26 @@
+-- NeuroNourish Research Study: Exploring Supplementation Impact on Autism
+-- This query pulls research papers related to autism, Leucovorin, Magnesium, and L-Theanine
+
+SELECT 
+    r.title AS research_title,
+    r.authors,
+    r.journal,
+    r.publication_year,
+    r.abstract,
+    s.supplement_name,
+    s.effect_summary,
+    r.doi
+FROM 
+    research_papers r
+JOIN 
+    supplements_used s ON r.paper_id = s.paper_id
+WHERE 
+    r.topic LIKE '%autism%'
+    AND (
+        s.supplement_name ILIKE '%Leucovorin%' OR
+        s.supplement_name ILIKE '%Magnesium%' OR
+        s.supplement_name ILIKE '%L-Theanine%'
+    )
+    AND r.peer_reviewed = TRUE
+ORDER BY 
+    r.publication_year DESC;
