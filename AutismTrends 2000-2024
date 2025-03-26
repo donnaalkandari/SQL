@@ -1,0 +1,89 @@
+-- Main Query: Analysis of the Rise of Autism from 2000 to 2024
+WITH AutismTrends AS (
+    SELECT
+        YEAR(diagnosis_date) AS year,
+        COUNT(*) AS total_cases,
+        COUNT(DISTINCT patient_id) AS unique_patients
+    FROM autism_diagnoses
+    WHERE diagnosis_date BETWEEN '2000-01-01' AND '2024-12-31'
+    GROUP BY YEAR(diagnosis_date)
+),
+
+GeneticInfluence AS (
+    SELECT
+        YEAR(ad.diagnosis_date) AS year,
+        COUNT(*) AS genetic_cases
+    FROM autism_diagnoses ad
+    JOIN genetic_factors gf ON ad.patient_id = gf.patient_id
+    WHERE gf.associated_with_autism = 1
+    GROUP BY YEAR(ad.diagnosis_date)
+),
+
+EnvironmentalFactors AS (
+    SELECT
+        YEAR(ed.exposure_date) AS year,
+        COUNT(DISTINCT ed.patient_id) AS cases_with_exposure,
+        ef.exposure_type
+    FROM environmental_exposures ed
+    JOIN exposure_factors ef ON ed.exposure_id = ef.id
+    WHERE ed.exposure_date BETWEEN '2000-01-01' AND '2024-12-31'
+    AND ef.linked_to_autism = 1
+    GROUP BY YEAR(ed.exposure_date), ef.exposure_type
+),
+
+DiagnosticChanges AS (
+    SELECT
+        YEAR(effective_date) AS year,
+        COUNT(*) AS diagnostic_changes
+    FROM diagnostic_criteria
+    WHERE effective_date BETWEEN '2000-01-01' AND '2024-12-31'
+    GROUP BY YEAR(effective_date)
+),
+
+ParentalAgeFactor AS (
+    SELECT
+        YEAR(d.diagnosis_date) AS year,
+        AVG(pd.mother_age) AS avg_mother_age,
+        AVG(pd.father_age) AS avg_father_age
+    FROM autism_diagnoses d
+    JOIN parental_data pd ON d.patient_id = pd.patient_id
+    GROUP BY YEAR(d.diagnosis_date)
+),
+
+HealthcareAccess AS (
+    SELECT
+        YEAR(ha.access_date) AS year,
+        AVG(ha.autism_screening_rate) AS avg_screening_rate,
+        AVG(ha.specialist_availability) AS avg_specialist_availability
+    FROM healthcare_access ha
+    WHERE ha.access_date BETWEEN '2000-01-01' AND '2024-12-31'
+    GROUP BY YEAR(ha.access_date)
+)
+
+-- Final Output: Combining All the Factors
+SELECT
+    at.year,
+    at.total_cases,
+    at.unique_patients,
+    gi.genetic_cases,
+    pa.avg_mother_age,
+    pa.avg_father_age,
+    hc.avg_screening_rate,
+    hc.avg_specialist_availability,
+    dc.diagnostic_changes,
+    ef.exposure_type,
+    ef.cases_with_exposure
+FROM AutismTrends at
+LEFT JOIN GeneticInfluence gi ON at.year = gi.year
+LEFT JOIN ParentalAgeFactor pa ON at.year = pa.year
+LEFT JOIN HealthcareAccess hc ON at.year = hc.year
+LEFT JOIN DiagnosticChanges dc ON at.year = dc.year
+LEFT JOIN (
+    SELECT
+        year,
+        exposure_type,
+        SUM(cases_with_exposure) AS cases_with_exposure
+    FROM EnvironmentalFactors
+    GROUP BY year, exposure_type
+) ef ON at.year = ef.year
+ORDER BY at.year ASC;
