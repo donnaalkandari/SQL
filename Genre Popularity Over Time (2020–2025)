@@ -1,0 +1,30 @@
+SELECT 
+    g.name AS genre,
+    ts.release_year,
+    COUNT(ts.id) AS series_count
+FROM 
+    tv_series ts
+JOIN 
+    genres g ON ts.genre_id = g.id
+WHERE 
+    ts.release_year BETWEEN 2020 AND 2025
+GROUP BY 
+    g.name, ts.release_year
+ORDER BY 
+    g.name, ts.release_year;
+SELECT 
+    g.name AS genre,
+    v.year,
+    SUM(v.viewers) AS total_viewers
+FROM 
+    viewership v
+JOIN 
+    tv_series ts ON v.tv_series_id = ts.id
+JOIN 
+    genres g ON ts.genre_id = g.id
+WHERE 
+    v.year BETWEEN 2020 AND 2025
+GROUP BY 
+    g.name, v.year
+ORDER BY 
+    g.name, v.year;
