@@ -1,0 +1,32 @@
+SELECT 
+    c.country_name,
+    p.product_category,
+    t.tariff_rate,
+    t.effective_date,
+    SUM(td.import_value) AS total_import_value_usd,
+    COUNT(DISTINCT td.transaction_id) AS total_imports_count,
+    AVG(td.unit_price) AS avg_unit_price,
+    CASE 
+        WHEN t.tariff_rate > 0 THEN 'Tariff Applied'
+        ELSE 'No Tariff'
+    END AS tariff_status
+FROM 
+    tariffs t
+JOIN 
+    trade_data td ON t.product_id = td.product_id AND t.country_id = td.country_id
+JOIN 
+    countries c ON t.country_id = c.country_id
+JOIN 
+    products p ON t.product_id = p.product_id
+WHERE 
+    t.policy_name = 'Trump Tariffs'
+    AND t.effective_date BETWEEN '2018-01-01' AND '2020-12-31'
+    AND td.import_date BETWEEN '2018-01-01' AND '2020-12-31'
+GROUP BY 
+    c.country_name,
+    p.product_category,
+    t.tariff_rate,
+    t.effective_date
+ORDER BY 
+    total_import_value_usd DESC,
+    tariff_rate DESC;
